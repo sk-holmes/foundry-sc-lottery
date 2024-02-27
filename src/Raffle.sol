@@ -60,7 +60,7 @@ contract Raffle is VRFConsumerBaseV2 {
     event EnteredRaffle(address indexed player);
     event PickedWinner(address indexed winner);
 
-    constructor(uint256 entranceFee, uint256 interval, address vrfCoordinator, bytes32 keyHash, uint64 subscriptionId, uint32 callbackGasLimit) VRFConsumerBaseV2(vrfCoordinator) {
+    constructor(uint256 entranceFee, uint256 interval, address vrfCoordinator, bytes32 keyHash, uint64 subscriptionId, uint32 callbackGasLimit, address link) VRFConsumerBaseV2(vrfCoordinator) {
         i_entranceFee = entranceFee;
         i_interval = interval;
         i_keyHash = keyHash;
@@ -74,6 +74,9 @@ contract Raffle is VRFConsumerBaseV2 {
     function enterRaffle() external payable {
         if (msg.value < i_entranceFee) {
             revert Raffle__NotEnoughETHSent();
+        }
+        if (s_status != RaffleStatus.OPEN){
+            revert Raffle__NotOpen();
         }
         s_players.push(payable(msg.sender));
         emit EnteredRaffle(msg.sender);
@@ -137,5 +140,9 @@ contract Raffle is VRFConsumerBaseV2 {
 
     function getRaffleState() external view returns (RaffleStatus) {
         return s_status;
+    }
+
+    function getPlayer(uint256 indexOfPlayer) external view returns (address payable) {
+        return s_players[indexOfPlayer];
     }
 }
